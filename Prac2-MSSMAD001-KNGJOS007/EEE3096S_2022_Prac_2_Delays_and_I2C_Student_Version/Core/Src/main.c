@@ -27,6 +27,8 @@ RTC Connections: (+)->5V (-)->GND D->PB7 (I2C1_SDA) C->PB6 (I2C1_SCL)
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stdio.h"
+#include "stdint.h"
+#include "stdlib.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,8 +50,8 @@ typedef struct {
 //TO DO:
 //TASK 2
 //Give DELAY1 and DELAY2 sensible values
-#define DELAY1 0
-#define DELAY2 0
+#define DELAY1 3200
+#define DELAY2 1000
 
 //TO DO:
 //TASK 4
@@ -150,6 +152,7 @@ int main(void){
 	//TASK 1
 	//First run this with nothing else in the loop and scope pin PC8 on an oscilloscope
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
+	bcdToDec(0b0001);
 
 	//TO DO:
 	//TASK 6
@@ -349,15 +352,21 @@ static void MX_GPIO_Init(void)
 
 }
 
-/* USER CODE BEGIN 4 */
+///* USER CODE BEGIN 4 */
 void pause_sec(float x)
 {
 	/* Delay program execution for x seconds */
 	//TO DO:
 	//TASK 2
 	//Make sure you've defined DELAY1 and DELAY2 in the private define section
+	while (x > 0) {
+		for (int i = 1; i < DELAY1; ++i) {
+				for (int j = 1; j < DELAY2; ++j) {
+				}
+			}
+		x--;
+	}
 
-	//YOUR CODE HERE
 }
 
 uint8_t decToBcd(int val)
@@ -365,8 +374,15 @@ uint8_t decToBcd(int val)
     /* Convert normal decimal numbers to binary coded decimal*/
 	//TO DO:
 	//TASK 3
+	
+	div_t output;
+    output = div(val, 10);
+    uint8_t result = (output.quot << 4) | output.rem;
 
-	//YOUR CODE HERE
+	for (int i = 7; i >= 0; i--) {
+        printf("%d", (result & (1<<i)) >> i);
+	}
+	return result;
 }
 
 int bcdToDec(uint8_t val)
@@ -375,73 +391,78 @@ int bcdToDec(uint8_t val)
 	//TO DO:
 	//TASK 3
 	//Complete the BCD to decimal function
-
-	//YOUR CODE HERE
-
+	
+	int tensPlace = (val >> 4);
+	int onesPlace = (val & 0b00001111);
+	int result = tensPlace*10 + onesPlace;
+	
+	char str[2];
+    printf("%d", result);
+	return result;
 }
-
-void setTime (uint8_t sec, uint8_t min, uint8_t hour, uint8_t dow, uint8_t dom, uint8_t month, uint8_t year)
-{
-    /* Write the time to the RTC using I2C */
-	//TO DO:
-	//TASK 4
-
-	uint8_t set_time[7];
-
-	//YOUR CODE HERE
-
-	//fill in the address of the RTC, the address of the first register to write anmd the size of each register
-	//The function and RTC supports multiwrite. That means we can give the function a buffer and first address
-	//and it will write 1 byte of data, increment the register address, write another byte and so on
-	HAL_I2C_Mem_Write(&hi2c1, DS3231_ADDRESS, FIRST_REG, REG_SIZE, set_time, 7, 1000);
-
-}
-
-void getTime (void)
-{
-    /* Get the time from the RTC using I2C */
-	//TO DO:
-	//TASK 4
-	//Update the global TIME time structure
-
-	uint8_t get_time[7];
-
-	//fill in the address of the RTC, the address of the first register to write anmd the size of each register
-	//The function and RTC supports multiread. That means we can give the function a buffer and first address
-	//and it will read 1 byte of data, increment the register address, write another byte and so on
-	HAL_I2C_Mem_Read(&hi2c1, DS3231_ADDRESS, FIRST_REG, REG_SIZE, get_time, 7, 1000);
-
-
-	//YOUR CODE HERE
-
-}
-
-int epochFromTime(TIME time){
-    /* Convert time to UNIX epoch time */
-	//TO DO:
-	//TASK 5
-	//You have been given the epoch time for Saturday, January 1, 2022 12:00:00 AM GMT+02:00
-	//It is define above as EPOCH_2022. You can work from that and ignore the effects of leap years/seconds
-
-	//YOUR CODE HERE
-
-	switch(months){
-	case 1:
-		day += 31;
-	break;
-
-	/*
-	 *COMPLETE THE SWITCH CASE OR INSERT YOUR OWN LOGIC
-	 */
-
-	default:
-		day = day;
-	}
-
-	return EPOCH_2022 + ;
-}
-
-/* USER CODE END 4 */
+//
+//void setTime (uint8_t sec, uint8_t min, uint8_t hour, uint8_t dow, uint8_t dom, uint8_t month, uint8_t year)
+//{
+//    /* Write the time to the RTC using I2C */
+//	//TO DO:
+//	//TASK 4
+//
+//	uint8_t set_time[7];
+//
+//	//YOUR CODE HERE
+//
+//	//fill in the address of the RTC, the address of the first register to write anmd the size of each register
+//	//The function and RTC supports multiwrite. That means we can give the function a buffer and first address
+//	//and it will write 1 byte of data, increment the register address, write another byte and so on
+//	HAL_I2C_Mem_Write(&hi2c1, DS3231_ADDRESS, FIRST_REG, REG_SIZE, set_time, 7, 1000);
+//
+//}
+//
+//void getTime (void)
+//{
+//    /* Get the time from the RTC using I2C */
+//	//TO DO:
+//	//TASK 4
+//	//Update the global TIME time structure
+//
+//	uint8_t get_time[7];
+//
+//	//fill in the address of the RTC, the address of the first register to write anmd the size of each register
+//	//The function and RTC supports multiread. That means we can give the function a buffer and first address
+//	//and it will read 1 byte of data, increment the register address, write another byte and so on
+//	HAL_I2C_Mem_Read(&hi2c1, DS3231_ADDRESS, FIRST_REG, REG_SIZE, get_time, 7, 1000);
+//
+//
+//	//YOUR CODE HERE
+//
+//}
+//
+//int epochFromTime(TIME time){
+//    /* Convert time to UNIX epoch time */
+//	//TO DO:
+//	//TASK 5
+//	//You have been given the epoch time for Saturday, January 1, 2022 12:00:00 AM GMT+02:00
+//	//It is define above as EPOCH_2022. You can work from that and ignore the effects of leap years/seconds
+//
+//	//YOUR CODE HERE
+//
+//	switch(months){
+//	case 1:
+//		day += 31;
+//	break;
+//
+//	/*
+//	 *COMPLETE THE SWITCH CASE OR INSERT YOUR OWN LOGIC
+//	 */
+//
+//	default:
+//		day = day;
+//	}
+//
+//	return EPOCH_2022 + ;
+//}
+//
+///* USER CODE END 4 */
 
 /**
   * @brief  This function is executed in case of error occurrence.
