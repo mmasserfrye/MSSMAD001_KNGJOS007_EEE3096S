@@ -61,6 +61,10 @@ typedef struct {
 #define REG_SIZE 8
 
 #define EPOCH_2022 1640988000
+#define secInYear 31536000
+#define secInDay 86400
+#define secInHour 3600
+#define secInMin 60
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -411,7 +415,13 @@ void setTime (uint8_t sec, uint8_t min, uint8_t hour, uint8_t dow, uint8_t dom, 
 
 	uint8_t set_time[7];
 
-	//YOUR CODE HERE
+  set_time[0] = decToBcd(sec);
+  set_time[1] = decToBcd(min);
+  set_time[2] = decToBcd(hour);
+  set_time[3] = decToBcd(dow);
+  set_time[4] = decToBcd(dom);
+  set_time[5] = decToBcd(month);
+  set_time[6] = decToBcd(year);
 
 	//fill in the address of the RTC, the address of the first register to write and the size of each register
 	//The function and RTC supports multiwrite. That means we can give the function a buffer and first address
@@ -435,42 +445,49 @@ void getTime (void)
 	//and it will read 1 byte of data, increment the register address, write another byte and so on
 	HAL_I2C_Mem_Read(&hi2c1, DS3231_ADDRESS, FIRST_REG, REG_SIZE, get_time, 7, 1000);
 
-	TIME.seconds = bcdToDec(get_time[0]);
-	TIME.minutes = bcdToDec(get_time[1]);
-	TIME.hour = bcdToDec(get_time[2]);
-	TIME.dayofweek = bcdToDec(get_time[3]);
-	TIME.dayofmonth = bcdToDec(get_time[4]);
-	TIME.month = bcdToDec(get_time[5]);
-	TIME.year = bcdToDec(get_time[6]);
+	time.seconds = bcdToDec(get_time[0]);
+	time.minutes = bcdToDec(get_time[1]);
+	time.hour = bcdToDec(get_time[2]);
+	time.dayofweek = bcdToDec(get_time[3]);
+	time.dayofmonth = bcdToDec(get_time[4]);
+	time.month = bcdToDec(get_time[5]);
+	time.year = bcdToDec(get_time[6]);
 
 }
 
-//int epochFromTime(TIME time){
-//    /* Convert time to UNIX epoch time */
-//	//TO DO:
-//	//TASK 5
-//	//You have been given the epoch time for Saturday, January 1, 2022 12:00:00 AM GMT+02:00
-//	//It is define above as EPOCH_2022. You can work from that and ignore the effects of leap years/seconds
-//
-//	//YOUR CODE HERE
-//
-//	switch(months){
-//	case 1:
-//		day += 31;
-//	break;
-//
-//	/*
-//	 *COMPLETE THE SWITCH CASE OR INSERT YOUR OWN LOGIC
-//	 */
-//
-//	default:
-//		day = day;
-//	}
-//
-//	return EPOCH_2022 + ;
-//}
-//
-///* USER CODE END 4 */
+int epochFromTime(TIME time){
+   /* Convert time to UNIX epoch time */
+	//TO DO:
+	//TASK 5
+	//You have been given the epoch time for Saturday, January 1, 2022 12:00:00 AM GMT+02:00
+	//It is define above as EPOCH_2022. You can work from that and ignore the effects of leap years/seconds
+
+  int numYears = time.year - 2022;
+  int day = 0;
+
+  int i = 1
+  while(i < time.months) {
+    switch(i){
+      case 4:
+        day += 30;
+      case 6:
+        day += 30;
+      case 9:
+        day += 30;
+      case 11:
+        day += 30;
+      case 2:
+        day += 28;
+      default:
+        day += 31;
+    }
+    i++;
+  }
+
+	return EPOCH_2022 + numYears*secInYear + day*secInDay + time.hour*secInHour + time.min*secInMin + time.seconds;
+}
+
+/* USER CODE END 4 */
 
 /**
   * @brief  This function is executed in case of error occurrence.
