@@ -56,9 +56,9 @@ typedef struct {
 //TO DO:
 //TASK 4
 //Define the RTC slave address
-#define DS3231_ADDRESS 0x00
-#define FIRST_REG 0
-#define REG_SIZE 8
+#define DS3231_ADDRESS 0xD0
+#define FIRST_REG 0x00
+#define REG_SIZE 1
 
 #define EPOCH_2022 1640988000
 #define secInYear 31536000
@@ -79,7 +79,7 @@ UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
-char buffer[14];
+char buffer[50];
 uint8_t data [] = "Hello from STM32!\r\n";
 TIME time;
 /* USER CODE END PV */
@@ -124,6 +124,8 @@ int main(void){
 
   /* USER CODE BEGIN Init */
 
+  setTime(0, 0, 0, 1, 13, 9, 0);
+
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -158,17 +160,22 @@ int main(void){
 	//TASK 1
 	//First run this with nothing else in the loop and scope pin PC8 on an oscilloscope
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
-	pause_sec(1);
+	pause_sec(3);
 
 	//TO DO:
 	//TASK 6
 
-	sprintf(buffer, "hellooo %d \n", 42);
-	//This creates a string with a pointer called buffer
+  
+  getTime();
+  int UNIXtime = epochFromTime(time);
 
+	//This creates a string with a pointer called buffer
 	//Transmit data via UART (connect 3v3, GND, and RXD to PA2)
 	//Blocking! fine for small buffers
+  sprintf(buffer, "Year %d, Month %d, Day %d, Hour %d, Min %d, Sec %d \n", time.year, time.month, time.dayofmonth, time.hour, time.minutes, time.seconds);
 	HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
+  sprintf(buffer, "UNIX epoch time: %d \n", UNIXtime);
+  HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
 
 
 
@@ -462,11 +469,11 @@ int epochFromTime(TIME time){
 	//You have been given the epoch time for Saturday, January 1, 2022 12:00:00 AM GMT+02:00
 	//It is define above as EPOCH_2022. You can work from that and ignore the effects of leap years/seconds
 
-  int numYears = time.year - 2022;
+  int numYears = time.year - 22;
   int day = 0;
 
-  int i = 1
-  while(i < time.months) {
+  int i = 1;
+  while(i < time.month) {
     switch(i){
       case 4:
         day += 30;
@@ -484,7 +491,7 @@ int epochFromTime(TIME time){
     i++;
   }
 
-	return EPOCH_2022 + numYears*secInYear + day*secInDay + time.hour*secInHour + time.min*secInMin + time.seconds;
+	return EPOCH_2022 + numYears*secInYear + day*secInDay + time.hour*secInHour + time.minutes*secInMin + time.seconds;
 }
 
 /* USER CODE END 4 */
