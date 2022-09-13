@@ -56,6 +56,8 @@ typedef struct {
 //TO DO:
 //TASK 4
 //Define the RTC slave address
+//#define DS3231_ADDRESS_R 0b11010001
+//#define DS3231_ADDRESS_W 0b11010000
 #define DS3231_ADDRESS 0xD0
 #define FIRST_REG 0x00
 #define REG_SIZE 1
@@ -124,7 +126,8 @@ int main(void){
 
   /* USER CODE BEGIN Init */
 
-  setTime(0, 0, 0, 1, 13, 9, 0);
+
+
 
   /* USER CODE END Init */
 
@@ -147,7 +150,7 @@ int main(void){
   //TO DO
   //TASK 6
   //YOUR CODE HERE
-
+  setTime(0, 0, 0, 1, 13, 9, 22);
 
   /* USER CODE END 2 */
 
@@ -172,14 +175,10 @@ int main(void){
 	//This creates a string with a pointer called buffer
 	//Transmit data via UART (connect 3v3, GND, and RXD to PA2)
 	//Blocking! fine for small buffers
-  sprintf(buffer, "Year %d, Month %d, Day %d, Hour %d, Min %d, Sec %d \n", time.year, time.month, time.dayofmonth, time.hour, time.minutes, time.seconds);
+  sprintf(buffer, "Year %d, Month %d, Day %d, Hour %d, Min %d, Sec %d \n\r", time.year, time.month, time.dayofmonth, time.hour, time.minutes, time.seconds);
 	HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
-  sprintf(buffer, "UNIX epoch time: %d \n", UNIXtime);
+  sprintf(buffer, "UNIX epoch time: %d \n\r", UNIXtime);
   HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
-
-
-
-	//YOUR CODE HERE
 
 
 
@@ -428,7 +427,7 @@ void setTime (uint8_t sec, uint8_t min, uint8_t hour, uint8_t dow, uint8_t dom, 
   set_time[3] = decToBcd(dow);
   set_time[4] = decToBcd(dom);
   set_time[5] = decToBcd(month);
-  set_time[6] = decToBcd(year);
+  set_time[6] = decToBcd(year); //0b00100010;//
 
 	//fill in the address of the RTC, the address of the first register to write and the size of each register
 	//The function and RTC supports multiwrite. That means we can give the function a buffer and first address
@@ -447,7 +446,7 @@ void getTime (void)
 	uint8_t get_time[7];
 
 
-	//fill in the address of the RTC, the address of the first register to write anmd the size of each register
+	//fill in the address of the RTC, the address of the first register to write and the size of each register
 	//The function and RTC supports multiread. That means we can give the function a buffer and first address
 	//and it will read 1 byte of data, increment the register address, write another byte and so on
 	HAL_I2C_Mem_Read(&hi2c1, DS3231_ADDRESS, FIRST_REG, REG_SIZE, get_time, 7, 1000);
@@ -470,26 +469,36 @@ int epochFromTime(TIME time){
 	//It is define above as EPOCH_2022. You can work from that and ignore the effects of leap years/seconds
 
   int numYears = time.year - 22;
-  int day = 0;
+  int day = time.dayofmonth - 1;
 
   int i = 1;
   while(i < time.month) {
     switch(i){
       case 4:
         day += 30;
+        break;
       case 6:
         day += 30;
+        break;
       case 9:
         day += 30;
+        break;
       case 11:
         day += 30;
+        break;
       case 2:
         day += 28;
+        break;
       default:
         day += 31;
+        break;
     }
     i++;
   }
+
+  
+  sprintf(buffer, "day: %d \n\r", day);
+  HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
 
 	return EPOCH_2022 + numYears*secInYear + day*secInDay + time.hour*secInHour + time.minutes*secInMin + time.seconds;
 }
