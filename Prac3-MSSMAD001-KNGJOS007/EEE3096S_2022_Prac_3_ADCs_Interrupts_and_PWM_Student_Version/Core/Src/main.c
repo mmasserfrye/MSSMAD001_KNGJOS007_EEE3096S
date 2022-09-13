@@ -51,11 +51,12 @@ UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
-char buffer[10];
+char buffer[20];
 
 //TO DO:
 //TASK 1
 //Create global variables for debouncing and delay interval
+int delay = 500;
 
 /* USER CODE END PV */
 
@@ -133,7 +134,7 @@ int main(void)
 	  //TASK 4
 	  //Complete rest of implementation
 
-	  HAL_Delay (500); // wait for 500 ms
+	  HAL_Delay (delay); // wait for 500 ms
 
     /* USER CODE END WHILE */
 
@@ -401,6 +402,16 @@ void EXTI0_1_IRQHandler(void)
 	//TASK 1
 	//Switch delay frequency
 
+	sprintf(buffer, "Button pushed!");
+	HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
+
+	if (delay == 500) {
+		delay = 250;
+	}
+	else {
+		delay = 500;
+	}
+
 	HAL_GPIO_EXTI_IRQHandler(B1_Pin); // Clear interrupt flags
 }
 
@@ -408,6 +419,8 @@ uint32_t pollADC(void){
 	//TO DO:
 	//TASK 2
 	// Complete the function body
+
+	uint32_t val;
 	return val;
 }
 
@@ -418,6 +431,8 @@ uint32_t ADCtoCRR(uint32_t adc_val){
 	//HINT: The CRR value for 100% DC is 47999 (DC = CRR/ARR = CRR/47999)
 	//HINT: The ADC range is approx 0 - 4095
 	//HINT: Scale number from 0-4096 to 0 - 47999
+
+	uint32_t val;
 	return val;
 }
 
