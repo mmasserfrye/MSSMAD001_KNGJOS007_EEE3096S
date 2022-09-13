@@ -996,20 +996,19 @@ int main(void){
  80007cc:	059b      	lsls	r3, r3, #22
  80007ce:	1c18      	adds	r0, r3, #0
  80007d0:	f000 f97e 	bl	8000ad0 <pause_sec>
-//	bcdToDec(0b0001);
 
 	//TO DO:
 	//TASK 6
 
-	sprintf(buffer, "helloooo %d \n \r", 42);
+	sprintf(buffer, "hellooo %d \n", 42);
  80007d4:	4907      	ldr	r1, [pc, #28]	; (80007f4 <main+0x54>)
  80007d6:	4b08      	ldr	r3, [pc, #32]	; (80007f8 <main+0x58>)
  80007d8:	222a      	movs	r2, #42	; 0x2a
  80007da:	0018      	movs	r0, r3
  80007dc:	f002 fde6 	bl	80033ac <siprintf>
-	//This creates a string "55555555555555" with a pointer called buffer
+	//This creates a string with a pointer called buffer
 
-	//Transmit data via UART
+	//Transmit data via UART (connect 3v3, GND, and RXD to PA2)
 	//Blocking! fine for small buffers
 	HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
  80007e0:	23fa      	movs	r3, #250	; 0xfa

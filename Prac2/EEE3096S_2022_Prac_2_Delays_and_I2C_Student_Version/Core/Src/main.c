@@ -157,10 +157,10 @@ int main(void){
 	//TO DO:
 	//TASK 6
 
-	sprintf(buffer, "helloooo %d \n", 42);
+	sprintf(buffer, "hellooo %d \n", 42);
 	//This creates a string with a pointer called buffer
 
-	//Transmit data via UART
+	//Transmit data via UART (connect 3v3, GND, and RXD to PA2)
 	//Blocking! fine for small buffers
 	HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
 
