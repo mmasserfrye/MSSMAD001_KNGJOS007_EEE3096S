@@ -42,7 +42,7 @@ with baud rate of 9600.
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
- ADC_HandleTypeDef hadc;
+ADC_HandleTypeDef hadc;
 DMA_HandleTypeDef hdma_adc;
 
 TIM_HandleTypeDef htim3;
@@ -113,8 +113,10 @@ int main(void)
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
-  //TO DO:
   //Create variables needed in while loop
+  uint32_t val;
+  uint32_t ccr_val;
+  char buffer[33];
 
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4); //Start the PWM on TIM3 Channel 4 (Green LED)
   /* USER CODE END 2 */
@@ -124,9 +126,13 @@ int main(void)
   while (1)
   {
 	  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8); // Toggle blue LED
-	  //TO DO:
 	  //TASK 2
 	  //Test your pollADC function and display via UART
+	  val = pollADC();
+	  ccr_val = ADCtoCRR(val);
+	  sprintf(buffer, "ADC reading: %d CCR: %d\n\n", val, ccr_val);
+	  HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
+
 
 	  //TASK 3
 	  //Test your ADCtoCRR function. Display CRR value via UART
@@ -134,7 +140,9 @@ int main(void)
 	  //TASK 4
 	  //Complete rest of implementation
 
-	  HAL_Delay (delay); // wait for 500 ms
+	  __HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_4, ccr_val);
+
+	  HAL_Delay(delay); // wait for 500 ms
 
     /* USER CODE END WHILE */
 
@@ -416,23 +424,25 @@ void EXTI0_1_IRQHandler(void)
 }
 
 uint32_t pollADC(void){
-	//TO DO:
 	//TASK 2
 	// Complete the function body
 
 	uint32_t val;
+	HAL_ADCEx_Calibration_Start(&hadc);
+	HAL_ADC_Start(&hadc);
+	HAL_ADC_PollForConversion(&hadc, 1);
+	val = HAL_ADC_GetValue(&hadc);
 	return val;
 }
 
 uint32_t ADCtoCRR(uint32_t adc_val){
-	//TO DO:
 	//TASK 2
 	// Complete the function body
 	//HINT: The CRR value for 100% DC is 47999 (DC = CRR/ARR = CRR/47999)
 	//HINT: The ADC range is approx 0 - 4095
 	//HINT: Scale number from 0-4096 to 0 - 47999
-
 	uint32_t val;
+	val = adc_val*47999/4095;
 	return val;
 }
 

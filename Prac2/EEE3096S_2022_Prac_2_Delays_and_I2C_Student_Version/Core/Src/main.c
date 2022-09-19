@@ -47,17 +47,13 @@ typedef struct {
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-//TO DO:
 //TASK 2
 //Give DELAY1 and DELAY2 sensible values
 #define DELAY1 3200
 #define DELAY2 1000
 
-//TO DO:
 //TASK 4
 //Define the RTC slave address
-//#define DS3231_ADDRESS_R 0b11010001
-//#define DS3231_ADDRESS_W 0b11010000
 #define DS3231_ADDRESS 0xD0
 #define FIRST_REG 0x00
 #define REG_SIZE 1
@@ -81,7 +77,6 @@ UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
-char buffer[50];
 uint8_t data [] = "Hello from STM32!\r\n";
 TIME time;
 /* USER CODE END PV */
@@ -115,28 +110,13 @@ int epochFromTime(TIME time);
   */
 int main(void){
 
-  /* USER CODE BEGIN 1 */
-
-  /* USER CODE END 1 */
-
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
-  /* USER CODE BEGIN Init */
-
-
-
-
-  /* USER CODE END Init */
-
   /* Configure the system clock */
   SystemClock_Config();
-
-  /* USER CODE BEGIN SysInit */
-
-  /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
@@ -144,42 +124,39 @@ int main(void){
   MX_DMA_Init();
   MX_USART2_UART_Init();
 
-  /* USER CODE BEGIN 2 */
-
-
-  //TO DO
+  /* USER CODE BEGIN  */
   //TASK 6
-  //YOUR CODE HERE
+  pause_sec(1);
   setTime(0, 0, 0, 1, 13, 9, 22);
 
-  /* USER CODE END 2 */
+  /* USER CODE END  */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
-	//TO DO:
 	//TASK 1
 	//First run this with nothing else in the loop and scope pin PC8 on an oscilloscope
 	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
-	pause_sec(3);
+	//	pause_sec(1);
 
-	//TO DO:
-	//TASK 6
+	char buffer[9];
+	char buffer2[29];
+	int s = time.seconds;
 
-  
-  getTime();
-  int UNIXtime = epochFromTime(time);
+	while (time.seconds == s) {
+	  getTime();
+	}
+	int UNIXtime = epochFromTime(time);
 
 	//This creates a string with a pointer called buffer
 	//Transmit data via UART (connect 3v3, GND, and RXD to PA2)
 	//Blocking! fine for small buffers
-  sprintf(buffer, "Year %d, Month %d, Day %d, Hour %d, Min %d, Sec %d \n\r", time.year, time.month, time.dayofmonth, time.hour, time.minutes, time.seconds);
+	sprintf(buffer, "%.2d:%.2d:%.2d\n", time.hour, time.minutes, time.seconds);
 	HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
-  sprintf(buffer, "UNIX epoch time: %d \n\r", UNIXtime);
-  HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
-
+	sprintf(buffer2, "UNIX epoch time: %d\n\n", UNIXtime);
+	HAL_UART_Transmit(&huart2, buffer2, sizeof(buffer2), 1000);
 
 
     /* USER CODE BEGIN 3 */
@@ -368,55 +345,43 @@ static void MX_GPIO_Init(void)
 void pause_sec(float x)
 {
 	/* Delay program execution for x seconds */
-	//TO DO:
 	//TASK 2
-	//Make sure you've defined DELAY1 and DELAY2 in the private define section
 	while (x > 0) {
 		for (int i = 1; i < DELAY1; ++i) {
-				for (int j = 1; j < DELAY2; ++j) {
-				}
+			for (int j = 1; j < DELAY2; ++j) {
 			}
+		}
 		x--;
 	}
-
 }
 
 uint8_t decToBcd(int val)
 {
     /* Convert normal decimal numbers to binary coded decimal*/
-	//TO DO:
 	//TASK 3
 	
 	div_t output;
     output = div(val, 10);
     uint8_t result = (output.quot << 4) | output.rem;
 
-	for (int i = 7; i >= 0; i--) {
-        printf("%d", (result & (1<<i)) >> i);
-	}
 	return result;
 }
 
 int bcdToDec(uint8_t val)
 {
     /* Convert binary coded decimal to normal decimal numbers */
-	//TO DO:
 	//TASK 3
-	//Complete the BCD to decimal function
 	
 	int tensPlace = (val >> 4);
 	int onesPlace = (val & 0b00001111);
 	int result = tensPlace*10 + onesPlace;
 	
-	char str[2];
-    printf("%d", result);
 	return result;
 }
 
 void setTime (uint8_t sec, uint8_t min, uint8_t hour, uint8_t dow, uint8_t dom, uint8_t month, uint8_t year)
 {
    /* Write the time to the RTC using I2C */
-	//TO DO:
 	//TASK 4
 
 	uint8_t set_time[7];
@@ -427,7 +392,7 @@ void setTime (uint8_t sec, uint8_t min, uint8_t hour, uint8_t dow, uint8_t dom, 
   set_time[3] = decToBcd(dow);
   set_time[4] = decToBcd(dom);
   set_time[5] = decToBcd(month);
-  set_time[6] = decToBcd(year); //0b00100010;//
+  set_time[6] = decToBcd(year);
 
 	//fill in the address of the RTC, the address of the first register to write and the size of each register
 	//The function and RTC supports multiwrite. That means we can give the function a buffer and first address
@@ -439,9 +404,7 @@ void setTime (uint8_t sec, uint8_t min, uint8_t hour, uint8_t dow, uint8_t dom, 
 void getTime (void)
 {
    /* Get the time from the RTC using I2C */
-	//TO DO:
 	//TASK 4
-	//Update the global TIME time structure
 
 	uint8_t get_time[7];
 
@@ -463,7 +426,6 @@ void getTime (void)
 
 int epochFromTime(TIME time){
    /* Convert time to UNIX epoch time */
-	//TO DO:
 	//TASK 5
 	//You have been given the epoch time for Saturday, January 1, 2022 12:00:00 AM GMT+02:00
 	//It is define above as EPOCH_2022. You can work from that and ignore the effects of leap years/seconds
@@ -495,10 +457,6 @@ int epochFromTime(TIME time){
     }
     i++;
   }
-
-  
-  sprintf(buffer, "day: %d \n\r", day);
-  HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
 
 	return EPOCH_2022 + numYears*secInYear + day*secInDay + time.hour*secInHour + time.minutes*secInMin + time.seconds;
 }
