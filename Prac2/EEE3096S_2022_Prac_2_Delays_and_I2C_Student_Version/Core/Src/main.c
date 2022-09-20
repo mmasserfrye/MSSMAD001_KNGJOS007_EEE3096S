@@ -68,6 +68,18 @@ typedef struct {
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 
+// for printing BCD
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
+#define BYTE_TO_BINARY(byte)  \
+  (byte & 0x80 ? '1' : '0'), \
+  (byte & 0x40 ? '1' : '0'), \
+  (byte & 0x20 ? '1' : '0'), \
+  (byte & 0x10 ? '1' : '0'), \
+  (byte & 0x08 ? '1' : '0'), \
+  (byte & 0x04 ? '1' : '0'), \
+  (byte & 0x02 ? '1' : '0'), \
+  (byte & 0x01 ? '1' : '0') 
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -143,6 +155,7 @@ int main(void){
 
 	char buffer[9];
 	char buffer2[29];
+  char buffer3[21];
 	int s = time.seconds;
 
 	while (time.seconds == s) {
@@ -157,6 +170,16 @@ int main(void){
 	HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
 	sprintf(buffer2, "UNIX epoch time: %d\n\n", UNIXtime);
 	HAL_UART_Transmit(&huart2, buffer2, sizeof(buffer2), 1000);
+
+  // BCD conversion demo
+
+  // sprintf(buffer2, "BCD from decimal: "BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(decToBcd(42)));
+	// HAL_UART_Transmit(&huart2, buffer2, sizeof(buffer2), 1000);
+
+  // sprintf(buffer3, "Decimal from BCD: %d\n\n", bcdToDec(0b01000010));
+	// HAL_UART_Transmit(&huart2, buffer3, sizeof(buffer3), 1000);
+
+  // pause_sec(3);
 
 
     /* USER CODE BEGIN 3 */
@@ -361,8 +384,8 @@ uint8_t decToBcd(int val)
 	//TASK 3
 	
 	div_t output;
-    output = div(val, 10);
-    uint8_t result = (output.quot << 4) | output.rem;
+  output = div(val, 10);
+  uint8_t result = (output.quot << 4) | output.rem;
 
 	return result;
 }
