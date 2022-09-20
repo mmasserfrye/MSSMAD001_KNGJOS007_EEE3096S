@@ -7,23 +7,23 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
   1 .text         00004694  080000c0  080000c0  000100c0  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  2 .rodata       000000a8  08004754  08004754  00014754  2**2
+  2 .rodata       000000ac  08004754  08004754  00014754  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  3 .ARM.extab    00000000  080047fc  080047fc  00020070  2**0
+  3 .ARM.extab    00000000  08004800  08004800  00020070  2**0
                   CONTENTS
-  4 .ARM          00000000  080047fc  080047fc  00020070  2**0
+  4 .ARM          00000000  08004800  08004800  00020070  2**0
                   CONTENTS
-  5 .preinit_array 00000000  080047fc  080047fc  00020070  2**0
+  5 .preinit_array 00000000  08004800  08004800  00020070  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  6 .init_array   00000004  080047fc  080047fc  000147fc  2**2
+  6 .init_array   00000004  08004800  08004800  00014800  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  7 .fini_array   00000004  08004800  08004800  00014800  2**2
+  7 .fini_array   00000004  08004804  08004804  00014804  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  8 .data         00000070  20000000  08004804  00020000  2**2
+  8 .data         00000070  20000000  08004808  00020000  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  9 .bss          00000150  20000070  08004874  00020070  2**2
+  9 .bss          00000150  20000070  08004878  00020070  2**2
                   ALLOC
- 10 ._user_heap_stack 00000600  200001c0  08004874  000201c0  2**0
+ 10 ._user_heap_stack 00000600  200001c0  08004878  000201c0  2**0
                   ALLOC
  11 .ARM.attributes 00000028  00000000  00000000  00020070  2**0
                   CONTENTS, READONLY
@@ -37,11 +37,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  16 .debug_macro  000121b4  00000000  00000000  0002fae0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   0000dcbc  00000000  00000000  00041c94  2**0
+ 17 .debug_line   0000dcbe  00000000  00000000  00041c94  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    0006a575  00000000  00000000  0004f950  2**0
+ 18 .debug_str    0006a575  00000000  00000000  0004f952  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000050  00000000  00000000  000b9ec5  2**0
+ 19 .comment      00000050  00000000  00000000  000b9ec7  2**0
                   CONTENTS, READONLY
  20 .debug_frame  000027c8  00000000  00000000  000b9f18  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
@@ -1261,8 +1261,8 @@ int main(void){
 
   // BCD conversion demo
 
-  sprintf(buffer2, "BCD from decimal: "BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(decToBcd(95)));
- 80009d2:	205f      	movs	r0, #95	; 0x5f
+   sprintf(buffer2, "BCD from decimal: "BYTE_TO_BINARY_PATTERN"  ", BYTE_TO_BINARY(decToBcd(42)));
+ 80009d2:	202a      	movs	r0, #42	; 0x2a
  80009d4:	f000 fa29 	bl	8000e2a <decToBcd>
  80009d8:	0003      	movs	r3, r0
  80009da:	b25b      	sxtb	r3, r3
@@ -1273,7 +1273,7 @@ int main(void){
  80009e4:	e001      	b.n	80009ea <main+0x76>
  80009e6:	2330      	movs	r3, #48	; 0x30
  80009e8:	469a      	mov	sl, r3
- 80009ea:	205f      	movs	r0, #95	; 0x5f
+ 80009ea:	202a      	movs	r0, #42	; 0x2a
  80009ec:	f000 fa1d 	bl	8000e2a <decToBcd>
  80009f0:	0003      	movs	r3, r0
  80009f2:	001a      	movs	r2, r3
@@ -1285,7 +1285,7 @@ int main(void){
  80009fe:	e001      	b.n	8000a04 <main+0x90>
  8000a00:	2330      	movs	r3, #48	; 0x30
  8000a02:	469b      	mov	fp, r3
- 8000a04:	205f      	movs	r0, #95	; 0x5f
+ 8000a04:	202a      	movs	r0, #42	; 0x2a
  8000a06:	f000 fa10 	bl	8000e2a <decToBcd>
  8000a0a:	0003      	movs	r3, r0
  8000a0c:	001a      	movs	r2, r3
@@ -1295,7 +1295,7 @@ int main(void){
  8000a14:	2431      	movs	r4, #49	; 0x31
  8000a16:	e000      	b.n	8000a1a <main+0xa6>
  8000a18:	2430      	movs	r4, #48	; 0x30
- 8000a1a:	205f      	movs	r0, #95	; 0x5f
+ 8000a1a:	202a      	movs	r0, #42	; 0x2a
  8000a1c:	f000 fa05 	bl	8000e2a <decToBcd>
  8000a20:	0003      	movs	r3, r0
  8000a22:	001a      	movs	r2, r3
@@ -1305,7 +1305,7 @@ int main(void){
  8000a2a:	2531      	movs	r5, #49	; 0x31
  8000a2c:	e000      	b.n	8000a30 <main+0xbc>
  8000a2e:	2530      	movs	r5, #48	; 0x30
- 8000a30:	205f      	movs	r0, #95	; 0x5f
+ 8000a30:	202a      	movs	r0, #42	; 0x2a
  8000a32:	f000 f9fa 	bl	8000e2a <decToBcd>
  8000a36:	0003      	movs	r3, r0
  8000a38:	001a      	movs	r2, r3
@@ -1315,7 +1315,7 @@ int main(void){
  8000a40:	2631      	movs	r6, #49	; 0x31
  8000a42:	e000      	b.n	8000a46 <main+0xd2>
  8000a44:	2630      	movs	r6, #48	; 0x30
- 8000a46:	205f      	movs	r0, #95	; 0x5f
+ 8000a46:	202a      	movs	r0, #42	; 0x2a
  8000a48:	f000 f9ef 	bl	8000e2a <decToBcd>
  8000a4c:	0003      	movs	r3, r0
  8000a4e:	001a      	movs	r2, r3
@@ -1327,7 +1327,7 @@ int main(void){
  8000a5a:	e001      	b.n	8000a60 <main+0xec>
  8000a5c:	2330      	movs	r3, #48	; 0x30
  8000a5e:	4698      	mov	r8, r3
- 8000a60:	205f      	movs	r0, #95	; 0x5f
+ 8000a60:	202a      	movs	r0, #42	; 0x2a
  8000a62:	f000 f9e2 	bl	8000e2a <decToBcd>
  8000a66:	0003      	movs	r3, r0
  8000a68:	001a      	movs	r2, r3
@@ -1339,7 +1339,7 @@ int main(void){
  8000a74:	e001      	b.n	8000a7a <main+0x106>
  8000a76:	2330      	movs	r3, #48	; 0x30
  8000a78:	4699      	mov	r9, r3
- 8000a7a:	205f      	movs	r0, #95	; 0x5f
+ 8000a7a:	202a      	movs	r0, #42	; 0x2a
  8000a7c:	f000 f9d5 	bl	8000e2a <decToBcd>
  8000a80:	0003      	movs	r3, r0
  8000a82:	001a      	movs	r2, r3
@@ -1363,7 +1363,7 @@ int main(void){
  8000aa6:	465b      	mov	r3, fp
  8000aa8:	4652      	mov	r2, sl
  8000aaa:	f003 f9dd 	bl	8003e68 <siprintf>
-	HAL_UART_Transmit(&huart2, buffer2, sizeof(buffer2), 1000);
+	 HAL_UART_Transmit(&huart2, buffer2, sizeof(buffer2), 1000);
  8000aae:	23fa      	movs	r3, #250	; 0xfa
  8000ab0:	009b      	lsls	r3, r3, #2
  8000ab2:	2218      	movs	r2, #24
@@ -1372,15 +1372,15 @@ int main(void){
  8000ab8:	221d      	movs	r2, #29
  8000aba:	f002 fa41 	bl	8002f40 <HAL_UART_Transmit>
 
-  sprintf(buffer3, "Decimal from BCD: %d\n\n", bcdToDec(0b10010001));
- 8000abe:	2091      	movs	r0, #145	; 0x91
+   sprintf(buffer3, "Decimal from BCD: %d\n\n", bcdToDec(0b01000010));
+ 8000abe:	2042      	movs	r0, #66	; 0x42
  8000ac0:	f000 f9d1 	bl	8000e66 <bcdToDec>
  8000ac4:	0002      	movs	r2, r0
  8000ac6:	490c      	ldr	r1, [pc, #48]	; (8000af8 <main+0x184>)
  8000ac8:	003b      	movs	r3, r7
  8000aca:	0018      	movs	r0, r3
  8000acc:	f003 f9cc 	bl	8003e68 <siprintf>
-	HAL_UART_Transmit(&huart2, buffer3, sizeof(buffer3), 1000);
+	 HAL_UART_Transmit(&huart2, buffer3, sizeof(buffer3), 1000);
  8000ad0:	23fa      	movs	r3, #250	; 0xfa
  8000ad2:	009b      	lsls	r3, r3, #2
  8000ad4:	0039      	movs	r1, r7
@@ -1388,7 +1388,7 @@ int main(void){
  8000ad8:	2215      	movs	r2, #21
  8000ada:	f002 fa31 	bl	8002f40 <HAL_UART_Transmit>
 
-  pause_sec(3);
+   pause_sec(3);
  8000ade:	4b07      	ldr	r3, [pc, #28]	; (8000afc <main+0x188>)
  8000ae0:	1c18      	adds	r0, r3, #0
  8000ae2:	f000 f975 	bl	8000dd0 <pause_sec>
@@ -1398,7 +1398,7 @@ int main(void){
  8000aec:	200001a0 	.word	0x200001a0
  8000af0:	08004754 	.word	0x08004754
  8000af4:	200000d8 	.word	0x200000d8
- 8000af8:	08004778 	.word	0x08004778
+ 8000af8:	0800477c 	.word	0x0800477c
  8000afc:	40400000 	.word	0x40400000
 
 08000b00 <SystemClock_Config>:
@@ -2818,7 +2818,7 @@ void SystemInit(void)
  8001274:	20002000 	.word	0x20002000
  8001278:	20000000 	.word	0x20000000
  800127c:	20000070 	.word	0x20000070
- 8001280:	08004804 	.word	0x08004804
+ 8001280:	08004808 	.word	0x08004808
  8001284:	20000070 	.word	0x20000070
  8001288:	200001c0 	.word	0x200001c0
 
@@ -6009,7 +6009,7 @@ void SystemInit(void)
  8002bc0:	40021000 	.word	0x40021000
  8002bc4:	00001388 	.word	0x00001388
  8002bc8:	fffff8ff 	.word	0xfffff8ff
- 8002bcc:	080047b0 	.word	0x080047b0
+ 8002bcc:	080047b4 	.word	0x080047b4
  8002bd0:	20000000 	.word	0x20000000
 
 08002bd4 <HAL_RCC_GetSysClockFreq>:
@@ -6104,8 +6104,8 @@ void SystemInit(void)
  8002c86:	b00f      	add	sp, #60	; 0x3c
  8002c88:	bd90      	pop	{r4, r7, pc}
  8002c8a:	46c0      	nop			; (mov r8, r8)
- 8002c8c:	08004790 	.word	0x08004790
- 8002c90:	080047a0 	.word	0x080047a0
+ 8002c8c:	08004794 	.word	0x08004794
+ 8002c90:	080047a4 	.word	0x080047a4
  8002c94:	40021000 	.word	0x40021000
  8002c98:	007a1200 	.word	0x007a1200
 
@@ -6139,7 +6139,7 @@ void SystemInit(void)
  8002cd0:	bd80      	pop	{r7, pc}
  8002cd2:	46c0      	nop			; (mov r8, r8)
  8002cd4:	40021000 	.word	0x40021000
- 8002cd8:	080047c0 	.word	0x080047c0
+ 8002cd8:	080047c4 	.word	0x080047c4
 
 08002cdc <HAL_RCCEx_PeriphCLKConfig>:
  8002cdc:	b580      	push	{r7, lr}
@@ -8291,10 +8291,10 @@ void SystemInit(void)
  8003e42:	4798      	blx	r3
  8003e44:	3601      	adds	r6, #1
  8003e46:	e7f2      	b.n	8003e2e <__libc_init_array+0x1e>
- 8003e48:	080047fc 	.word	0x080047fc
- 8003e4c:	080047fc 	.word	0x080047fc
- 8003e50:	080047fc 	.word	0x080047fc
- 8003e54:	08004800 	.word	0x08004800
+ 8003e48:	08004800 	.word	0x08004800
+ 8003e4c:	08004800 	.word	0x08004800
+ 8003e50:	08004800 	.word	0x08004800
+ 8003e54:	08004804 	.word	0x08004804
 
 08003e58 <memset>:
  8003e58:	0003      	movs	r3, r0
@@ -8671,9 +8671,9 @@ void SystemInit(void)
  8004150:	f000 f87c 	bl	800424c <_printf_i>
  8004154:	e7ea      	b.n	800412c <_svfiprintf_r+0x1c0>
  8004156:	46c0      	nop			; (mov r8, r8)
- 8004158:	080047c8 	.word	0x080047c8
- 800415c:	080047ce 	.word	0x080047ce
- 8004160:	080047d2 	.word	0x080047d2
+ 8004158:	080047cc 	.word	0x080047cc
+ 800415c:	080047d2 	.word	0x080047d2
+ 8004160:	080047d6 	.word	0x080047d6
  8004164:	00000000 	.word	0x00000000
  8004168:	08003ea9 	.word	0x08003ea9
 
@@ -9048,8 +9048,8 @@ void SystemInit(void)
  8004462:	e7e9      	b.n	8004438 <_printf_i+0x1ec>
  8004464:	2500      	movs	r5, #0
  8004466:	e7f7      	b.n	8004458 <_printf_i+0x20c>
- 8004468:	080047d9 	.word	0x080047d9
- 800446c:	080047ea 	.word	0x080047ea
+ 8004468:	080047dd 	.word	0x080047dd
+ 800446c:	080047ee 	.word	0x080047ee
 
 08004470 <memchr>:
  8004470:	b2c9      	uxtb	r1, r1

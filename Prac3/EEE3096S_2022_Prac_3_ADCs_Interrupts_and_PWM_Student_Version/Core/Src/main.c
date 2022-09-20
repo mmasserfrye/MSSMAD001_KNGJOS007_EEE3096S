@@ -116,7 +116,8 @@ int main(void)
   //Create variables needed in while loop
   uint32_t val;
   uint32_t ccr_val;
-  char buffer[33];
+  uint32_t duty;
+  char buffer[42];
 
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4); //Start the PWM on TIM3 Channel 4 (Green LED)
   /* USER CODE END 2 */
@@ -130,7 +131,9 @@ int main(void)
 	  //Test your pollADC function and display via UART
 	  val = pollADC();
 	  ccr_val = ADCtoCRR(val);
-	  sprintf(buffer, "ADC reading: %d CCR: %d\n\n", val, ccr_val);
+	  duty = val*100;
+	  duty = duty/4095;
+	  sprintf(buffer, "ADC reading: %d CCR: %d Duty: %d%%\n\n", val, ccr_val, duty);
 	  HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
 
 

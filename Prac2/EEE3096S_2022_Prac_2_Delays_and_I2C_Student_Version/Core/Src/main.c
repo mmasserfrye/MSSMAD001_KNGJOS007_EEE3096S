@@ -173,13 +173,13 @@ int main(void){
 
   // BCD conversion demo
 
-  // sprintf(buffer2, "BCD from decimal: "BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(decToBcd(42)));
-	// HAL_UART_Transmit(&huart2, buffer2, sizeof(buffer2), 1000);
+  //  sprintf(buffer2, "BCD from decimal: "BYTE_TO_BINARY_PATTERN"  ", BYTE_TO_BINARY(decToBcd(42)));
+	//  HAL_UART_Transmit(&huart2, buffer2, sizeof(buffer2), 1000);
 
-  // sprintf(buffer3, "Decimal from BCD: %d\n\n", bcdToDec(0b01000010));
-	// HAL_UART_Transmit(&huart2, buffer3, sizeof(buffer3), 1000);
+  //  sprintf(buffer3, "Decimal from BCD: %d\n\n", bcdToDec(0b01000010));
+	//  HAL_UART_Transmit(&huart2, buffer3, sizeof(buffer3), 1000);
 
-  // pause_sec(3);
+  //  pause_sec(3);
 
 
     /* USER CODE BEGIN 3 */
