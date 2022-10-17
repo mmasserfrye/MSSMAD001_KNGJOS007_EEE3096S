@@ -31,7 +31,7 @@ We also set up an interrupt to switch the waveform between various LUTs.
 //Assign values to NS, TIM2CLK and F_SIGNAL
 #define NS 512
 #define TIM2CLK 1600000
-#define F_SIGNAL 5000
+#define F_SIGNAL 500
 
 /* USER CODE END PD */
 
@@ -4189,7 +4189,8 @@ uint32_t audio_LUT[60000] = {191, 191, 191, 191, 191, 191, 191, 191, 191, 191, 1
 //TO DO:
 //TASK 3
 //Calculate TIM2_Ticks
-uint32_t TIM2_Ticks = TIM2CLK/(NS*F_SIGNAL);
+//uint32_t TIM2_Ticks = TIM2CLK/(NS*F_SIGNAL);
+uint32_t TIM2_Ticks = (TIM2CLK/F_SIGNAL)*NS/100;
 
 /* USER CODE END PV */
 
@@ -4205,6 +4206,8 @@ void EXTI0_1_IRQHandler(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+char current_LUT = 's';
 
 /* USER CODE END 0 */
 
@@ -4244,14 +4247,14 @@ int main(void)
   //TO DO:
   //TASK 4
   //Start TIM3 in PWM mode on channel 1
-  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1)
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
 
   //Start TIM2 in Output Compare (OC) mode on channel 1.
-  HAL_TIM_OC_Start(&htim2, TIM_CHANNEL_1)
+  HAL_TIM_OC_Start(&htim2, TIM_CHANNEL_1);
 
   //Start the DMA in interrupt (IT) mode.
   uint32_t DestAddress = (uint32_t) &(TIM3->CCR1);
-  HAL_DMA_Start_IT(hdma_tim2_ch1, sin_LUT, DestAddress, NS)
+  HAL_DMA_Start_IT(&hdma_tim2_ch1, (uint32_t)sin_LUT, DestAddress, NS);
 
   //Start the DMA transfer
   __HAL_TIM_ENABLE_DMA(&htim2, TIM_DMA_CC1);
@@ -4264,11 +4267,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
-
 	  //No need to do anything in the main loop for this practical
-
-
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -4487,9 +4486,30 @@ void EXTI0_1_IRQHandler(void)
 	//TO DO:
 	//TASK 5
 	//Disable DMA transfer, start DMA in IT mode with new source and re enable transfer
+	
 	//Remember to debounce using HAL_GetTick()
+	// uint32_t start = HAL_GetTick();
+ 	// while ( (HAL_GetTick() - start) < 100) {}
 
+	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8); // Toggle blue LED for troubleshooting
 
+	uint32_t DestAddress = (uint32_t) &(TIM3->CCR1);
+	HAL_DMA_Abort_IT(&hdma_tim2_ch1); // disable DMA transfer
+
+	if (current_LUT == 's') {
+		HAL_DMA_Start_IT(&hdma_tim2_ch1, (uint32_t)triangle_LUT, DestAddress, NS);
+		current_LUT = 't';
+	}
+	else if (current_LUT == 't'){
+		HAL_DMA_Start_IT(&hdma_tim2_ch1, (uint32_t)saw_LUT, DestAddress, NS);
+		current_LUT = 'w';
+	}
+	else {
+		HAL_DMA_Start_IT(&hdma_tim2_ch1, (uint32_t)sin_LUT, DestAddress, NS);
+		current_LUT = 's';
+	}
+
+	__HAL_TIM_ENABLE_DMA(&htim2, TIM_DMA_CC1);
 	HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_0); // Clear interrupt flags
 }
 /* USER CODE END 4 */
