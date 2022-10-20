@@ -1,23 +1,12 @@
 /* USER CODE BEGIN Header */
 /**
 *******************************************************
-Info:		STM32 ADCs, GPIO Interrupts and PWM with HAL
-Author:		Amaan Vally
+Info:		Mini Project Reciever
+Author:		Madeleine Masser-Frye & Joshua King
 *******************************************************
-In this practical you will learn to use the ADC on the STM32 using the HAL.
-Here, we will be measuring the voltage on a potentiometer and using its value
-to adjust the brightness of the on board LEDs. We set up an interrupt to switch the
-display between the blue and green LEDs.
-
-Code is also provided to send data from the STM32 to other devices using UART protocol
-by using HAL. You will need Putty or a Python script to read from the serial port on your PC.
-
-UART Connections are as follows: 5V->5V GND->GND RXD->PA2 TXD->PA3(unused).
-Open device manager and go to Ports. Plug in the USB connector with the STM powered on.
-Check the port number (COMx). Open up Putty and create a new Serial session on that COMx
-with baud rate of 9600.
-  ******************************************************************************
-  */
+Adapted from Prac 3
+******************************************************************************
+**/
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -36,9 +25,10 @@ with baud rate of 9600.
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define sigsize 22
+#define sigsize 22 // not including start bit
 #define datasize 12
 #define countsize 8
+#define threshold 4000 // ADC reading that determines if signal was high or low
 
 /* USER CODE END PD */
 
@@ -58,15 +48,12 @@ DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
 
-//TO DO:
-//TASK 1
-//Create global variables for debouncing and delay interval
 int delay = 500;
 int ind = 0;
+int msgcount = 0;
 bool listening = 0;
 bool lighton = 0;
 bool started = 0;
-int msgcount = 0;
 bool parity = 0;
 int signal[sigsize];
 int countBin[countsize];
@@ -140,36 +127,28 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  val = pollADC();
+	  val = pollADC(); // sample from potentiometer input
 	  ccr_val = ADCtoCRR(val);
 	  duty = val*100;
 	  duty = duty/4095;
     
-
-    // int arr[12] = {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0};
-    
 	  if (listening) {
-    //   int test = binArray12ToDec(arr);
-    //   char buffer[26];
-	  // sprintf(buffer, "Test: %d Parity:\n", test);
-	  // HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
-    //   listening = 0;
 
-      HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8); // Toggle blue LED
-      if (ind > (sigsize-1)) { //once it reaches the end of the message
+      HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8); // Toggle blue LED to show it's listening
+
+      if (ind > (sigsize-1)) { // check if it's reached the end of the message
         started = 0;
         ind = 0;
 
+        // slice signal into meaningful parts
         for (int i=0; i<datasize; i++) {
           data[i] = signal[i];
         }
-
         for (int i=0; i<countsize; i++) {
           countBin[i] = signal[sigsize+i];
         }
-
-        int pot = binArray12ToDec(data);
         parity = signal[datasize];
+        int pot = binArray12ToDec(data);
         int countRec = binArray8ToDec(countBin);
 
         char buffer[26];
@@ -177,44 +156,35 @@ int main(void)
 	      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
 
         char buffer2[41];
-        sprintf(buffer2, "Recieved msg count: %d Local msg count: %d\n", msgcount, msgcount); //countRec
+        sprintf(buffer2, "Recieved msg count: %d Local msg count: %d\n", countRec, msgcount);
 	      HAL_UART_Transmit(&huart2, buffer2, sizeof(buffer2), 1000);
 
-        msgcount = msgcount + 1;
-
+        msgcount = msgcount + 1; // increase local message counter
       }
-      else if (started) { // put stuff in array
-        if (val > 4000) {
+      else if (started) { // check if signal tranmission has begun
+        if (val > threshold) {
           lighton = 1;
         }
         else {
           lighton = 0;
         }
-        signal[ind] = lighton;
-        ind = ind + 1;
+        signal[ind] = lighton; // add latest bit to the signal recieved array
+        ind = ind + 1; // increment index for next bit of the signal
         char buffer[18];
         sprintf(buffer, "Latest reading: %d\n", lighton);
 	      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
       }
       else { // wait for first light on to start recording
-        if (val > 4000) {
-          started = 1;
+        if (val > threshold) {
+          started = 1; // set started variable high once transmission begins
           char buffer[18];
           sprintf(buffer, "Started recording\n");
 	        HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
         }
-        // else {
-        //   char buffer[18];
-        //   sprintf(buffer, "ADC reading: %d\n", val);
-        //   HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
-        // }
       }
 	  }
 
-
-	  __HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_4, ccr_val);
-
-	  HAL_Delay(delay); // wait for 500 ms
+	  HAL_Delay(delay); // wait for until sampling again
 
     /* USER CODE END WHILE */
 
@@ -223,6 +193,7 @@ int main(void)
   /* USER CODE END 3 */
 }
 
+// converts counter binary array to decimal
 int binArray8ToDec(int arr[]) {
   int s = 8;
   int num = 0;
@@ -232,6 +203,7 @@ int binArray8ToDec(int arr[]) {
   return num;
 }
 
+// converts data binary array to decimal
 int binArray12ToDec(int arr[]) {
   int s = 12;
   int num = 0;
