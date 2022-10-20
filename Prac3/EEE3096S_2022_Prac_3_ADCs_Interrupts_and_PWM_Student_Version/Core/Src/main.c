@@ -21,6 +21,7 @@ with baud rate of 9600.
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <stdbool.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -34,6 +35,11 @@ with baud rate of 9600.
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+#define sigsize 22
+#define datasize 12
+#define countsize 8
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -51,12 +57,20 @@ UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
-char buffer[20];
 
 //TO DO:
 //TASK 1
 //Create global variables for debouncing and delay interval
 int delay = 500;
+int ind = 0;
+bool listening = 0;
+bool lighton = 0;
+bool started = 0;
+int msgcount = 0;
+bool parity = 0;
+int signal[sigsize];
+int countBin[countsize];
+int data[datasize];
 
 /* USER CODE END PV */
 
@@ -117,7 +131,7 @@ int main(void)
   uint32_t val;
   uint32_t ccr_val;
   uint32_t duty;
-  char buffer[42];
+  char buffer[80];
 
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4); //Start the PWM on TIM3 Channel 4 (Green LED)
   /* USER CODE END 2 */
@@ -126,22 +140,77 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8); // Toggle blue LED
-	  //TASK 2
-	  //Test your pollADC function and display via UART
 	  val = pollADC();
 	  ccr_val = ADCtoCRR(val);
 	  duty = val*100;
 	  duty = duty/4095;
-	  sprintf(buffer, "ADC reading: %d CCR: %d Duty: %d%%\n\n", val, ccr_val, duty);
-	  HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
+    
 
+    // int arr[12] = {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0};
+    
+	  if (listening) {
+    //   int test = binArray12ToDec(arr);
+    //   char buffer[26];
+	  // sprintf(buffer, "Test: %d Parity:\n", test);
+	  // HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
+    //   listening = 0;
 
-	  //TASK 3
-	  //Test your ADCtoCRR function. Display CRR value via UART
+      HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8); // Toggle blue LED
+      if (ind > (sigsize-1)) { //once it reaches the end of the message
+        started = 0;
+        ind = 0;
 
-	  //TASK 4
-	  //Complete rest of implementation
+        for (int i=0; i<datasize; i++) {
+          data[i] = signal[i];
+        }
+
+        for (int i=0; i<countsize; i++) {
+          countBin[i] = signal[sigsize+i];
+        }
+
+        int pot = binArray12ToDec(data);
+        parity = signal[datasize];
+        int countRec = binArray8ToDec(countBin);
+
+        char buffer[26];
+        sprintf(buffer, "Pot value: %d Parity: %d \n", pot, parity);
+	      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
+
+        char buffer2[41];
+        sprintf(buffer2, "Recieved msg count: %d Local msg count: %d\n", msgcount, msgcount); //countRec
+	      HAL_UART_Transmit(&huart2, buffer2, sizeof(buffer2), 1000);
+
+        msgcount = msgcount + 1;
+
+      }
+      else if (started) { // put stuff in array
+        if (val > 4000) {
+          lighton = 1;
+        }
+        else {
+          lighton = 0;
+        }
+        signal[ind] = lighton;
+        ind = ind + 1;
+        char buffer[18];
+        sprintf(buffer, "Latest reading: %d\n", lighton);
+	      HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
+      }
+      else { // wait for first light on to start recording
+        if (val > 4000) {
+          started = 1;
+          char buffer[18];
+          sprintf(buffer, "Started recording\n");
+	        HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
+        }
+        // else {
+        //   char buffer[18];
+        //   sprintf(buffer, "ADC reading: %d\n", val);
+        //   HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
+        // }
+      }
+	  }
+
 
 	  __HAL_TIM_SetCompare(&htim3, TIM_CHANNEL_4, ccr_val);
 
@@ -152,6 +221,24 @@ int main(void)
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
+}
+
+int binArray8ToDec(int arr[]) {
+  int s = 8;
+  int num = 0;
+  for (int i=0; i<s; i++) {
+    num = num + arr[s-i-1]*pow(2, i);
+  }
+  return num;
+}
+
+int binArray12ToDec(int arr[]) {
+  int s = 12;
+  int num = 0;
+  for (int i=0; i<s; i++) {
+    num = num + arr[s-i-1]*pow(2, i);
+  }
+  return num;
 }
 
 /**
@@ -409,19 +496,19 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void EXTI0_1_IRQHandler(void)
 {
-	//TO DO:
-	//TASK 1
-	//Switch delay frequency
-
-	sprintf(buffer, "Button pushed!");
-	HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
-
-	if (delay == 500) {
-		delay = 250;
-	}
-	else {
-		delay = 500;
-	}
+	if (listening) {
+    listening = 0;
+    msgcount = 0;
+    char buffer[35];
+    sprintf(buffer, "Stopped listening, reset msg count\n");
+	  HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
+  }
+  else {
+    listening = 1;
+    char buffer[24];
+    sprintf(buffer, "Listening for start bit\n");
+	  HAL_UART_Transmit(&huart2, buffer, sizeof(buffer), 1000);
+  }
 
 	HAL_GPIO_EXTI_IRQHandler(B1_Pin); // Clear interrupt flags
 }
