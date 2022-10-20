@@ -160,6 +160,17 @@ int main(void)
 	      HAL_UART_Transmit(&huart2, buffer2, sizeof(buffer2), 1000);
 
         msgcount = msgcount + 1; // increase local message counter
+
+        if (countRec != msgcount) { // flash quickly for 2s if message counts differ
+          for (int j=0; j<10; j++) {
+            HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
+            HAL_Delay(200);
+          }
+        }
+        else { // steady LED to indicate message counts check out
+          HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8, GPIO_PIN_SET);
+          HAL_Delay(2000);
+        }
       }
       else if (started) { // check if signal tranmission has begun
         if (val > threshold) {
